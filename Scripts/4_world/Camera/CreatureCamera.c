@@ -110,33 +110,22 @@ class CreatureCamera extends Camera {
                         else
                         {
                             GetGame().ChatPlayer("Object selected: " + className + " at distance: " + distance.ToString() + " meters.");
-                            // Pokud objekt není validní cíl, smažeme aktuální cíl a odešleme prázdný RPC
-                            currentTarget = null;
-                            RequestTargetInfo(null);
+                           
                         }
                     }
                     else 
                     {
-                        // Pokud je mimo dosah, smažeme aktuální cíl a odešleme prázdný RPC
-                        currentTarget = null;
-                        RequestTargetInfo(null);
-                        GetGame().ChatPlayer("Target out of range. Max distance is " + rayDistance.ToString() + " meters.");
+                      
                     }
                 }
                 else
                 {
-                    // Pokud je objekt null, smažeme aktuální cíl a odešleme prázdný RPC
-                    currentTarget = null;
-                    RequestTargetInfo(null);
-                    GetGame().ChatPlayer("01 - No valid target detected.");
+                  
                 }
             }
             else 
             {
-                // Pokud raycast nenašel žádný objekt, smažeme aktuální cíl a odešleme prázdný RPC
-                currentTarget = null;
-                RequestTargetInfo(null);
-                GetGame().ChatPlayer("02 - No valid target detected.");
+               
             }
         }
 
@@ -145,7 +134,10 @@ class CreatureCamera extends Camera {
         GetGame().ChatPlayer("NEW UI - holding Tab ");
     }*/
     if (input.LocalPress("UAMefaRightClick")) { // Pravé tlačítko myši
-        GetGame().ChatPlayer("right mouse clicked - attack target ");
+        // Pokud raycast nenašel žádný objekt, smažeme aktuální cíl a odešleme prázdný RPC
+                currentTarget = null;
+                RequestTargetInfo(null);
+                GetGame().ChatPlayer("02 - No valid target detected.");
     }
     if (input.LocalValue("UAMefaMiddleHold") > 0) {
         if (!isFreelookActive) {
@@ -170,7 +162,9 @@ class CreatureCamera extends Camera {
 
         vector followPosition = targetCreature.ModelToWorld(offset);
         SetPosition(followPosition);
-    } else {
+    }
+    else 
+    {
         if (isFreelookActive) {
             isFreelookActive = false;
         }
@@ -182,22 +176,26 @@ class CreatureCamera extends Camera {
             desiredPosition[1] = terrainHeight + 0.5;
         }
 
-        float interpolationSpeed = 4.0; // Nižší rychlost pro plynulejší pohyb
+        // Zvýšená rychlost interpolace pro pozici (např. 20x místo okamžitého skoku)
+        float interpolationSpeed = 20.0; 
         lastValidPosition = ManualLerp(lastValidPosition, desiredPosition, timeSlice * interpolationSpeed);
         SetPosition(lastValidPosition);
 
         vector targetOrientation = targetCreature.GetOrientation();
-        targetOrientation[1] = -12; // Pevný vertikální úhel
+        targetOrientation[1] = -12; // pevný vertikální úhel
         targetOrientation[2] = 0;
 
+        // Zvýšená rychlost interpolace pro rotaci
+        float interpolationYawSpeed = 20.0; 
         currentYaw = lastValidOrientation[0];
         targetYaw = targetOrientation[0];
-        interpolatedYaw = InterpolateYaw(currentYaw, targetYaw, timeSlice * 3.0);
-
+        interpolatedYaw = InterpolateYaw(currentYaw, targetYaw, timeSlice * interpolationYawSpeed);
         smoothedOrientation = Vector(interpolatedYaw, targetOrientation[1], 0);
         SetOrientation(smoothedOrientation);
         lastValidOrientation = smoothedOrientation;
     }
+
+
 
     // Debug logy
     vector currentPosition = GetPosition();
